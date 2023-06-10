@@ -1,4 +1,5 @@
 class UserImagesController < ApplicationController
+  
   before_action :only => [:update]
   def show
       user = current_user

@@ -1,6 +1,9 @@
 class User < ApplicationRecord
   include Devise::JWT::RevocationStrategies::JTIMatcher
+  require 'two_factor'
   has_many :vehicles
+
+  
   
   has_many :publishes
   devise :database_authenticatable, :registerable,
@@ -15,8 +18,13 @@ class User < ApplicationRecord
         validate :password_complexity
         #custom validation on image
         validate :image_format
+        #for chatting
+        has_many :chats
 
 
+
+
+        
 
         validates :first_name, presence: true, format: { with: /\A[a-zA-Z]+\z/, message: "only allows letters" }
         validates :last_name, presence: true, format: { with: /\A[a-zA-Z]+\z/, message: "only allows letters" }
@@ -28,6 +36,28 @@ class User < ApplicationRecord
         has_one_attached :image
         before_create :create_activation_digest
 
+        
+     # foe sending otp and verification
+
+        def send_passcode
+          response = TwoFactor.send_passcode(phone_number)
+          if response && response['Status'].to_s.downcase == 'success'
+            update_column(:session_key, response['Details'])
+            true
+          else
+            false
+          end
+        end
+        
+      
+        def verify_passcode(passcode)
+          TwoFactor.verify_passcode(session_key, passcode)['Status'].to_s.downcase == 'success'
+        end
+
+
+
+
+     #password validation 
 
         def password_complexity
           if password.present? && !password.match(/\A(?=.*[a-z])(?=.*[A-Z])(?=.*\W)/)
@@ -35,6 +65,11 @@ class User < ApplicationRecord
           end
         end
 
+
+
+
+      
+  # for email verification 
         def send_activation_email
           UserMailer.account_activation(self).deliver_now
         end
@@ -66,7 +101,7 @@ class User < ApplicationRecord
 
 
 
- # for image validation
+        # for image validation
         def image_format
           return unless image.attached?
       

@@ -10,11 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_11_052756) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_19_090834) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-  enable_extension "postgis"
-  enable_extension "postgis_topology"
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -44,16 +42,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_11_052756) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "layer", primary_key: ["topology_id", "layer_id"], force: :cascade do |t|
-    t.integer "topology_id", null: false
-    t.integer "layer_id", null: false
-    t.string "schema_name", null: false
-    t.string "table_name", null: false
-    t.string "feature_column", null: false
-    t.integer "feature_type", null: false
-    t.integer "level", default: 0, null: false
-    t.integer "child_id"
-    t.index ["schema_name", "table_name", "feature_column"], name: "layer_schema_name_table_name_feature_column_key", unique: true
+  create_table "chats", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "passenger_id"
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["passenger_id"], name: "index_chats_on_passenger_id"
+    t.index ["user_id"], name: "index_chats_on_user_id"
   end
 
   create_table "passengers", force: :cascade do |t|
@@ -61,6 +57,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_11_052756) do
     t.bigint "publish_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "price"
+    t.integer "seats"
+    t.string "status"
     t.index ["publish_id"], name: "index_passengers_on_publish_id"
     t.index ["user_id"], name: "index_passengers_on_user_id"
   end
@@ -74,31 +73,29 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_11_052756) do
     t.time "time"
     t.float "set_price"
     t.text "about_ride"
-    t.bigint "user_id", null: false
+    t.bigint "driver_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "select_car"
     t.float "source_latitude"
     t.float "source_longitude"
     t.float "destination_latitude"
     t.float "destination_longitude"
-    t.index ["user_id"], name: "index_publishes_on_user_id"
+    t.bigint "vehicle_id"
+    t.string "book_instantly"
+    t.string "mid_seat"
+    t.json "select_route"
+    t.string "status"
+    t.index ["driver_id"], name: "index_publishes_on_driver_id"
   end
 
-  create_table "spatial_ref_sys", primary_key: "srid", id: :integer, default: nil, force: :cascade do |t|
-    t.string "auth_name", limit: 256
-    t.integer "auth_srid"
-    t.string "srtext", limit: 2048
-    t.string "proj4text", limit: 2048
-    t.check_constraint "srid > 0 AND srid <= 998999", name: "spatial_ref_sys_srid_check"
-  end
-
-  create_table "topology", id: :serial, force: :cascade do |t|
-    t.string "name", null: false
-    t.integer "srid", null: false
-    t.float "precision", null: false
-    t.boolean "hasz", default: false, null: false
-    t.index ["name"], name: "topology_name_key", unique: true
+  create_table "ratings", force: :cascade do |t|
+    t.integer "rating"
+    t.integer "rideid", null: false
+    t.text "comment"
+    t.integer "giver", null: false
+    t.integer "receiver", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|
@@ -124,6 +121,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_11_052756) do
     t.boolean "activated"
     t.datetime "activated_at"
     t.string "activate_token"
+    t.string "session_key"
+    t.float "average_rating", default: 0.0
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -145,9 +144,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_11_052756) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "layer", "topology", name: "layer_topology_id_fkey"
-  add_foreign_key "passengers", "publishes"
-  add_foreign_key "passengers", "users"
-  add_foreign_key "publishes", "users"
+  add_foreign_key "chats", "passengers"
+  add_foreign_key "chats", "users"
+  add_foreign_key "passengers", "publishes", on_delete: :cascade
+  add_foreign_key "passengers", "users", on_delete: :cascade
+  add_foreign_key "publishes", "users", column: "driver_id", on_delete: :cascade
+  add_foreign_key "publishes", "vehicles", on_delete: :cascade
+  add_foreign_key "ratings", "publishes", column: "rideid", on_delete: :cascade
+  add_foreign_key "ratings", "users", column: "giver", on_delete: :cascade
+  add_foreign_key "ratings", "users", column: "receiver", on_delete: :cascade
   add_foreign_key "vehicles", "users", on_delete: :cascade
 end

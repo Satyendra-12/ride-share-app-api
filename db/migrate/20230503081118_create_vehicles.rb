@@ -8,7 +8,7 @@ class CreateVehicles < ActiveRecord::Migration[7.0]
       t.string :vehicle_type
       t.string :vehicle_color
       t.integer :vehicle_model_year
-      t.references :user, null: false, foreign_key: true
+      t.references :user, null: false, foreign_key: { on_delete: :cascade }
 
       t.timestamps
     end

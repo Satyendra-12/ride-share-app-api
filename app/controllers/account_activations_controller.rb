@@ -8,11 +8,8 @@ class AccountActivationsController < ApplicationController
         render json: "already activated."
       end
   end
-
-  
   def edit
       user = current_user
-  
       if user && !user.activated? 
         user.activate
         render json: { message: "Account activated!" }, status: :ok

@@ -53,16 +53,20 @@ Rails.application.configure do
   # Highlight code that triggered database queries in logs.
   config.active_record.verbose_query_logs = true
   #config.hosts << "93e5-112-196-113-2.ngrok-free.app"
+
+
+  #config.action_controller.default_url_options = { host: 'imaginative-concha-5b2766.netlify.app', protocol: 'https' }
+
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
-  config.hosts << "5210-112-196-113-2.ngrok-free.app"
+  config.hosts << "e3cc-112-196-113-2.in.ngrok.io"
 
  
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    :user_name => '72e18b130f114e',
-    :password => '3ab114591d0536',
+    :user_name => '10acd37b126aad',
+    :password => '31a0eb601c9d82',
     :address => 'sandbox.smtp.mailtrap.io',
     :domain => 'sandbox.smtp.mailtrap.io',
     :port => '2525',

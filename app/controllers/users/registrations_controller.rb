@@ -1,28 +1,17 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   
   respond_to :json
- 
 
-  
-  def respond_with(resource, options={})
+
+  def respond_with(resource, options = {})
     if resource.persisted?
       render json: {
-        status: { code: 200, message: 'Signed up successfully', data: resource }
-        
+        status: { code: 200, message: 'Signed up successfully', data: resource },
       }, status: :ok
-    # else
-    #   if resource.errors[:email].include?("has already been taken")
-    #     render json: {
-    #       status: { code: 401, message: 'User already registered' },
-    #       errors: resource.errors.full_messages
-    #     }, status: :unauthorized
-      else
-        render plain: resource.errors.full_messages.first, status: :unprocessable_entity
-
+    else
+      render plain: resource.errors.full_messages.first, status: :unprocessable_entity
     end
   end
-  
-
 
   def update
     user = current_user
@@ -50,15 +39,16 @@ class Users::RegistrationsController < Devise::RegistrationsController
     render json: { error: error.message }, status: :unauthorized
   end
 
-
-  
   def show
-    
-    render json: {
-      status: { code: 200, data: current_user }
-      
-    }, status: :ok
+    if current_user.present?
+      render json: {
+        status: { code: 200, data: current_user, image_url: current_user.image.attached? ? url_for(current_user.image) : nil }
+      }, status: :ok
+    else
+      render json: { errors: 'User not found' }, status: :not_found
+    end
   end
+  
   
   private
   
@@ -67,7 +57,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
   end
 
   def user_params
-    params.require(:user).permit(:email, :first_name, :last_name, :bio, :postal_address, :title, :dob, :travel_preferences, :phone_number)
+    params.require(:user).permit(:email, :first_name, :last_name, :bio, :postal_address, :title, :dob, :travel_preferences, :phone_number, :average_rating, :image_url)
   end
 
 end 

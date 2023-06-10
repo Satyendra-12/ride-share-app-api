@@ -9,7 +9,8 @@ class CreatePublishes < ActiveRecord::Migration[7.0]
       t.time :time
       t.float :set_price
       t.text :about_ride
-      t.references :user, null: false, foreign_key: true
+      t.references :user, null: false, foreign_key: { on_delete: :cascade }
+
 
       t.timestamps
     end
